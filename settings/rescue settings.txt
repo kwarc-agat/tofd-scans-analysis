@@ -1,0 +1,5 @@
+Filter type;Median
+Canny threshold;30;255
+Dilation - kernel size;3
+Dilation - iterations;4
+Region of interest;0;500;200;335
