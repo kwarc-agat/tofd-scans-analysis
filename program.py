@@ -43,7 +43,6 @@ def set_ROI(filepath):
 
 
 def canny_threshold(smooth_size, filepath):
-    print(smooth_size)
     img = cv.imread(filepath)
     imgray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     filter_img = cv.medianBlur(imgray, smooth_size)
@@ -67,9 +66,9 @@ def canny_threshold(smooth_size, filepath):
 
 def read_settings():
     with open("settings\\program_settings.txt", "r") as f:
-        settings=f.readlines()
-    settings=[x.strip() for x in settings]
-    output=[]
+        settings = f.readlines()
+    settings = [x.strip() for x in settings]
+    output = []
     for line in settings:
         parts = line.split(';')
         output.append(parts)
@@ -89,6 +88,8 @@ def load_image(path):
     root_geometry = str(root_width)+"x"+str(root_height)+"+"+str(root_posX)+"+"+str(root_posY)
     root.geometry(root_geometry)
     display_image.config(image=display_image.my_image)
+    button_settings.config(state=NORMAL)
+    button_run.config(state=NORMAL)
 
 
 def tool_load_image():
@@ -107,27 +108,23 @@ def tool_load_image():
     button_load_function = Button(window_load_image, text="Load", command=lambda: load_image(path+entry_load_image.get()), width=15)
     button_load_function.grid(columnspan=2, pady=5, padx=65)
 
+    status.config(text="Adjust settings or run inspection")
     window_load_image.mainloop()
 
 
 def tool_run():
     print("Inspection running...")
     settings = read_settings()
-    print(settings)
     settings_names=[]
     settings_values=[]
     for i in range(len(settings)):
-        print(settings[i])
         settings_names.append(settings[i][0])
         for j in range(1,len(settings[i])):
             settings_values.append(settings[i][j])
     for i in range(len(settings_values)):
         settings_values[i]=int(settings_values[i])
-    print(settings_values)
-    print(settings_names)
     global x, y, w, h, images
     x,y,w,h, filepath_inspected, images = myModule.inspect(filepath, settings_values)
-    print(str(w)+" x "+str(h)+" "+filepath_inspected)
     status.config(text=" Main defect size: "+str(w)+" x "+str(h))
     load_image(filepath_inspected)
     button_display_process.config(state=NORMAL)
@@ -160,16 +157,12 @@ def tool_settings():
 
     print("Accessing settings...")
     settings = read_settings()
-    print(settings)
     settings_names = []
     settings_values = []
     for i in range(len(settings)):
-        print(settings[i])
         settings_names.append(settings[i][0])
         for j in range(1, len(settings[i])):
             settings_values.append(settings[i][j])
-    print(settings_values)
-    print(settings_names)
 
     window_settings = Tk()
     window_settings.geometry("375x180+468+300")
@@ -226,10 +219,6 @@ def tool_settings():
     setting_4 = Button(window_settings, text="SET", width=15, command=lambda:set_ROI(filepath))
     setting_4.grid(row=6, column=1, pady=5)
 
-    # print("Current settings:\nFilter type: "+setting_0_return.get()+"\nCanny threshold: "+str(min_threshold)+" - "+str(max_threshold))
-    # print("Dilation - kernel size: "+setting_2.get()+"\nDilation - iterations: "+setting_3.get())
-    # print("Region of interest: "+str(x_min)+" < x < "+str(x_max)+",\t"+str(y_min)+" < y < "+str(y_max))
-
     window_settings.protocol("WM_DELETE_WINDOW", save_on_closing)
     window_settings.mainloop()
 
@@ -238,22 +227,22 @@ root = Tk()
 root.title("Program")
 root.geometry("500x500+400+100")
 
-toolbar = Frame(root, bd=1, relief=RIDGE, bg="blue")
+toolbar = Frame(root, bd=1, relief=RIDGE)
 toolbar.pack(side=TOP, fill=X)
 
 inspection_frame = Frame(root)
 inspection_frame.pack(side=BOTTOM, fill=X)
 
-status = Label(inspection_frame, text="Preparing  to do nothing...", bd=1, bg="green", relief=SUNKEN, anchor=W, font="Calibri 12", height=2) # bd-border, relief-how border appears, anchor-where
+status = Label(inspection_frame, text="Load image to inspect...", bd=1, relief=SUNKEN, anchor=W, font="Calibri 12", height=2) # bd-border, relief-how border appears, anchor-where
 status.pack(side=BOTTOM, fill=X)
 
 button_load = Button(toolbar, text="Load image", command=tool_load_image)
 button_load.pack(side=LEFT, padx=2, pady=2)
 
-button_settings = Button(toolbar, text="Settings", command=tool_settings)
+button_settings = Button(toolbar, text="Settings", state=DISABLED, command=tool_settings)
 button_settings.pack(side=LEFT, padx=2,pady=2)
 
-button_run = Button(toolbar, text="Run", command=tool_run)
+button_run = Button(toolbar, text="Run", state=DISABLED, command=tool_run)
 button_run.pack(side=LEFT, padx=2, pady=2)
 
 button_display_process = Button(toolbar, text="Show process", state=DISABLED, command=lambda:myModule.display_process(images))
