@@ -11,14 +11,14 @@ class Rectangle:
 
 def nothing(x):
     print(x)
-def is_inside_joint(x, y, x_min, x_max, y_min, y_max):     #  SZEROKOŚĆ WNĘTRZA ZŁĄCZA NA SZTYWNO !!!
+def is_inside_joint(x, y, x_min, x_max, y_min, y_max):
     if(y<y_max and y>y_min and x<x_max and x>x_min):
         return True
     else: return False
 def display_process(images):
     titles = ['ORIGINAL','FILTER', 'CANNY', 'DILATE', 'CONTOURS', 'SOBEL-COMBINED', 'CANNY']
     for i in range(5):
-        plt.subplot(3,2,i+1)
+        plt.subplot(3, 2, i+1)
         plt.imshow(images[i], 'gray')
         plt.title(titles[i])
         plt.xticks([])
@@ -38,7 +38,7 @@ def inspect(filepath, list_of_parameters):
     except IndexError:
         filter_size = 7
         canny_min = 30
-        canny_max = 125
+        canny_max = 255
         dilation_kernel_size = 3
         dilation_it = 4
         roi_x_min = 0
@@ -86,3 +86,11 @@ def inspect(filepath, list_of_parameters):
     filepath_inspected = filepath.replace(".png", "_inspected.png")
     cv.imwrite(filepath_inspected, img)
     return x_max, y_max, w_max, h_max, filepath_inspected, images
+#
+# throwMe=[3,30,255,1,1,2,538,20,121]
+# x_max, y_max, w_max, h_max, filepath_inspected, images = inspect("images\\tofd1.png", throwMe)
+# plt.subplot(1,1,1)
+# plt.imshow(images[4], 'gray')
+# plt.xticks([])
+# plt.yticks([])
+# plt.show()

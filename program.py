@@ -2,8 +2,8 @@ from tkinter import *
 import tkinter.messagebox
 import cv2 as cv
 from cv2 import *
-import  inspection as myModule
-import  sys
+import inspection as myModule
+import sys
 
 
 def nothing(x):
