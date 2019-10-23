@@ -14,7 +14,62 @@ def nothing(x):
 def is_inside_joint(x, y, x_min, x_max, y_min, y_max):
     if(y<y_max and y>y_min and x<x_max and x>x_min):
         return True
-    else: return False
+    else:
+        return False
+
+def is_inside_joint(inner: Rectangle, outer: Rectangle) -> bool:
+    if(inner.x >= outer.x and inner.y >= outer.y and
+            (inner.x+inner.w) <= (outer.x+outer.w) and (inner.y+inner.h) <= (outer.y+outer.h)):
+        return True
+    else:
+        return False
+
+
+def check_histograms(img, x_max, y_max, w_max, h_max, roi_x_min, roi_x_max, roi_y_min, roi_y_max):
+    height, width, channels = img.shape
+    indication_surface_down = img[roi_y_max:height, x_max:x_max+w_max]
+    indication_surface_up = img[80:roi_y_min, x_max:x_max+w_max] #górna część obrazu oobcięta SZTYWNO
+    surface_down = img[roi_y_max:height, roi_x_min:roi_x_max] # próbka obrazu wzięta na SZTYWNO
+    surface_up = img[80:roi_y_min, roi_x_min:roi_x_max] # górna część obrazu oobcięta SZTYWNO
+
+    # cv.imshow("INDICATION DOWN", indication_surface_down)
+    # cv.imshow("INDICATION UP", indication_surface_up)
+    # cv.imshow("DOWN", surface_down)
+    # cv.imshow("UP", surface_up)
+
+    hist_indication_surface_down = cv.calcHist([indication_surface_down], [0], None, [256], [0,256])
+    hist_indication_surface_up = cv.calcHist([indication_surface_up], [0], None, [256], [0,256])
+    hist_surface_down = cv.calcHist([surface_down], [0], None, [256], [0,256])
+    hist_surface_up = cv.calcHist([surface_up], [0], None, [256], [0,256])
+    hists = [hist_indication_surface_up, hist_indication_surface_down, hist_surface_up, hist_surface_down]
+
+    check_up = cv.compareHist(hist_surface_up, hist_indication_surface_up, cv.HISTCMP_CORREL)
+    check_down = cv.compareHist(hist_surface_down, hist_indication_surface_down, cv.HISTCMP_CORREL)
+
+    # hist=cv.calcHist([img], [0], None, [256], [0,256])
+    # plt.plot(hist_indication_surface_down)
+    # plt.show()
+
+    # titles = ['UP', 'DOWN', 'IND_UP: '+str(check_up), 'IND_DOWN'+str(check_down)]
+    # for i in range(4):
+    #     plt.subplot(2, 2, i + 1)
+    #     plt.plot(hists[i], 'gray')
+    #     plt.title(titles[i])
+    #     plt.xticks([])
+    #     plt.yticks([])
+    # plt.show()
+    cv.imshow("INIT", img)
+    cv.waitKey()
+    if check_down<check_up and check_down<0.75:
+        corrected_rect = [(x_max,y_max),(x_max+w_max,roi_y_max)]
+    elif check_up<check_down and check_up<0.75:
+        corrected_rect = [(x_max,roi_y_min),(x_max+w_max,y_max+h_max)]
+    else:
+        corrected_rect = [(x_max,y_max),(x_max+w_max,y_max+h_max)]
+
+    return corrected_rect
+
+
 def display_process(images):
     titles = ['ORIGINAL','FILTER', 'CANNY', 'DILATE', 'CONTOURS', 'SOBEL-COMBINED', 'CANNY']
     for i in range(5):
@@ -47,6 +102,7 @@ def inspect(filepath, list_of_parameters):
         roi_y_max = 335
 
     img = cv.imread(filepath)
+    img_copy = img.copy()
     height, width, channels = img.shape
     imgray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
@@ -68,7 +124,7 @@ def inspect(filepath, list_of_parameters):
     for i in range(len(contours)):
         x,y,w,h = cv.boundingRect(contours[i])
         if is_inside_joint(x, y, roi_x_min, roi_x_max, roi_y_min, roi_y_max):                              # KONTURY LEŻĄCE WEWNĄTRZ, ALE WNĘTRZE SZTYWNO ZDEFINIOWANE
-            cv.drawContours(img, contours, i, (0, 0, 255), 1)
+            cv.drawContours(img, contours, i, (0, 0, 255), 1)                   #GORZEJ - SPRAWDZAM TYLKO CZY LEWY GÓRNY RÓG LEŻY WEWNĄTRZ XDXDXDXDXD
             cv.rectangle(img, (x,y), (x+w, y+h), (0,255,0),2)
             rec = Rectangle(x,y,w,h)
             all_recs.append(rec)
@@ -86,11 +142,6 @@ def inspect(filepath, list_of_parameters):
     filepath_inspected = filepath.replace(".png", "_inspected.png")
     cv.imwrite(filepath_inspected, img)
     return x_max, y_max, w_max, h_max, filepath_inspected, images
-#
-# throwMe=[3,30,255,1,1,2,538,20,121]
-# x_max, y_max, w_max, h_max, filepath_inspected, images = inspect("images\\tofd1.png", throwMe)
-# plt.subplot(1,1,1)
-# plt.imshow(images[4], 'gray')
-# plt.xticks([])
-# plt.yticks([])
-# plt.show()
+
+# throwMe=[]
+# x_max, y_max, w_max, h_max, filepath_inspected, images = inspect("images\\tofd_weld.png", throwMe)
