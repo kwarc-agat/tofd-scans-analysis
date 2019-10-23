@@ -1,5 +1,5 @@
 Filter size;7
-Canny threshold;42;91
+Canny threshold;17;115
 Dilation - kernel size;3
 Dilation - iterations;2
-Region of interest;3;1002;149;248
+Region of interest;0;1079;110;190

@@ -11,11 +11,12 @@ class Rectangle:
 
 def nothing(x):
     print(x)
-def is_inside_joint(x, y, x_min, x_max, y_min, y_max):
-    if(y<y_max and y>y_min and x<x_max and x>x_min):
-        return True
-    else:
-        return False
+
+# def is_inside_joint(x, y, x_min, x_max, y_min, y_max):
+#     if(y<y_max and y>y_min and x<x_max and x>x_min):
+#         return True
+#     else:
+#         return False
 
 def is_inside_joint(inner: Rectangle, outer: Rectangle) -> bool:
     if(inner.x >= outer.x and inner.y >= outer.y and
@@ -23,6 +24,23 @@ def is_inside_joint(inner: Rectangle, outer: Rectangle) -> bool:
         return True
     else:
         return False
+
+
+def discard_irrelevant_results(all_recs):
+    rec_fields = []
+    rec_relevant = []
+    sum_fields = 0
+    for rec in all_recs:
+        sum_fields += rec.w*rec.h
+    average_field = sum_fields/len(all_recs)
+    for rec in all_recs:
+        if rec.w * rec.h > average_field:
+            rec_fields.append(rec.w*rec.h)
+            rec_relevant.append(rec)
+    # plt.hist(rec_fields, rwidth=5)
+    # plt.title("Average field: "+str(average_field)+"\nIndications: "+str(len(rec_fields)))
+    # plt.show()
+    return rec_relevant
 
 
 def check_histograms(img, x_max, y_max, w_max, h_max, roi_x_min, roi_x_max, roi_y_min, roi_y_max):
@@ -50,14 +68,14 @@ def check_histograms(img, x_max, y_max, w_max, h_max, roi_x_min, roi_x_max, roi_
     # plt.plot(hist_indication_surface_down)
     # plt.show()
 
-    # titles = ['UP', 'DOWN', 'IND_UP: '+str(check_up), 'IND_DOWN'+str(check_down)]
-    # for i in range(4):
-    #     plt.subplot(2, 2, i + 1)
-    #     plt.plot(hists[i], 'gray')
-    #     plt.title(titles[i])
-    #     plt.xticks([])
-    #     plt.yticks([])
-    # plt.show()
+    titles = ['UP', 'DOWN', 'IND_UP: '+str(check_up), 'IND_DOWN'+str(check_down)]
+    for i in range(4):
+        plt.subplot(2, 2, i + 1)
+        plt.plot(hists[i], 'gray')
+        plt.title(titles[i])
+        plt.xticks([])
+        plt.yticks([])
+    plt.show()
     cv.imshow("INIT", img)
     cv.waitKey()
     if check_down<check_up and check_down<0.75:
@@ -101,6 +119,7 @@ def inspect(filepath, list_of_parameters):
         roi_y_min = 200
         roi_y_max = 335
 
+    roi = Rectangle(roi_x_min, roi_y_min, roi_x_max-roi_x_min, roi_y_max-roi_y_min)
     img = cv.imread(filepath)
     img_copy = img.copy()
     height, width, channels = img.shape
@@ -123,15 +142,16 @@ def inspect(filepath, list_of_parameters):
     all_recs=[]
     for i in range(len(contours)):
         x,y,w,h = cv.boundingRect(contours[i])
-        if is_inside_joint(x, y, roi_x_min, roi_x_max, roi_y_min, roi_y_max):                              # KONTURY LEŻĄCE WEWNĄTRZ, ALE WNĘTRZE SZTYWNO ZDEFINIOWANE
-            cv.drawContours(img, contours, i, (0, 0, 255), 1)                   #GORZEJ - SPRAWDZAM TYLKO CZY LEWY GÓRNY RÓG LEŻY WEWNĄTRZ XDXDXDXDXD
-            cv.rectangle(img, (x,y), (x+w, y+h), (0,255,0),2)
-            rec = Rectangle(x,y,w,h)
+        rec = Rectangle(x, y, w, h)
+        if is_inside_joint(rec, roi):
+            cv.drawContours(img, contours, i, (0, 0, 255), 1)
             all_recs.append(rec)
             number_of_recs+=1
 
+    all_recs=discard_irrelevant_results(all_recs)
     x_max = 0; y_max = 0; w_max = 0; h_max = 0  # NAJWIĘKSZY PROSTOKĄT WEWNĄTRZ
     for rec in all_recs:
+        cv.rectangle(img, (rec.x, rec.y), (rec.x + rec.w, rec.y + rec.h), (0, 255, 0), 2)
         if rec.w*rec.h > w_max*h_max:
             x_max=rec.x
             y_max=rec.y
@@ -141,7 +161,22 @@ def inspect(filepath, list_of_parameters):
     images = [imgray, filter_img, edges, dilation, img]
     filepath_inspected = filepath.replace(".png", "_inspected.png")
     cv.imwrite(filepath_inspected, img)
+
+    with open("results_in_pixels.txt", "w" ) as f:
+        i=0
+        for rec in all_recs:
+            f.write("Pattern "+str(i)+": x0 = "+str(rec.x)+"; y0 = "+str(rec.y)+"; w = "+str(rec.w)+"; h = "+str(rec.h)+"\n")
+            i += 1
+        f.write("Max: x0 = "+str(x_max)+"; y0 = "+str(y_max)+"; w = "+str(w_max)+"; h = "+str(h_max)+"\n")
     return x_max, y_max, w_max, h_max, filepath_inspected, images
 
-# throwMe=[]
-# x_max, y_max, w_max, h_max, filepath_inspected, images = inspect("images\\tofd_weld.png", throwMe)
+# throwMe=[7,17,115,3,2,0,1079,110,190]
+# x_max, y_max, w_max, h_max, filepath_inspected, images = inspect("images\\test3.png", throwMe)
+# titles = ['ORIGINAL','FILTER', 'CANNY', 'DILATE', 'CONTOURS', 'SOBEL-COMBINED', 'CANNY']
+# for i in range(5):
+#     plt.subplot(3, 2, i+1)
+#     plt.imshow(images[i], 'gray')
+#     plt.title(titles[i])
+#     plt.xticks([])
+#     plt.yticks([])
+# plt.show()
