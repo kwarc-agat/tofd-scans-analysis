@@ -9,14 +9,16 @@ class Rectangle:
         self.w = w1
         self.h = h1
 
+
 def nothing(x):
-    print(x)
+    print("Nothing:"+str(x))
 
 # def is_inside_joint(x, y, x_min, x_max, y_min, y_max):
 #     if(y<y_max and y>y_min and x<x_max and x>x_min):
 #         return True
 #     else:
 #         return False
+
 
 def is_inside_joint(inner: Rectangle, outer: Rectangle) -> bool:
     if(inner.x >= outer.x and inner.y >= outer.y and
@@ -97,6 +99,43 @@ def display_process(images):
         plt.xticks([])
         plt.yticks([])
     plt.show()
+
+
+def find_roi(filename):
+
+    thresh1 = 100
+    thresh2 = 255
+    dil_kernel_size = 5
+    dil_it = 3
+
+    roi_img = cv.imread(filename)
+    roi_imgray = cv.cvtColor(roi_img, cv.COLOR_BGR2GRAY)
+    _, roi_imthresh = cv.threshold(roi_imgray, thresh1, thresh2, cv.THRESH_BINARY_INV)
+    roi_kernel = np.ones((dil_kernel_size, dil_kernel_size), np.uint8)
+    roi_imdil = cv.dilate(roi_imthresh, roi_kernel, iterations=dil_it)
+
+    h, w, c = roi_img.shape
+    roi_mat_img = np.transpose(roi_imdil)
+    first_column = roi_mat_img[0]
+
+    for i in range(len(first_column)):
+        if first_column[i] == 255 and first_column[i + 1] == 0 and i > 10:  # jakie piękne rzeczy na sztywno jprdl
+            y_min = i
+            break
+
+    for j in range(i, len(first_column) - 1):
+        if first_column[j] == 0 and first_column[j + 1] == 255 and j - y_min > 50:
+            y_max = j                                   # jakie piękne rzeczy na sztywno jprdl
+            break
+
+    roi = Rectangle(0,y_min,w,y_max-y_min)
+
+    # with open("roi_s_v2.txt", "a") as f:
+    #     f.write("\n" + filename + ": x0 = 0; y0 = " + str(y_min) + "; x_max = " + str(w) + "; y_max = " +
+    #             str(y_max) + "; h (12mm) -> " + str(y_max - y_min))
+
+    return roi
+
 def inspect(filepath, list_of_parameters):
     try:
         filter_size=list_of_parameters[0]
@@ -123,6 +162,7 @@ def inspect(filepath, list_of_parameters):
     img = cv.imread(filepath)
     img_copy = img.copy()
     height, width, channels = img.shape
+    print("Height: "+str(height)+" Width: "+str(width))
     imgray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
     filter_img = cv.medianBlur(imgray,filter_size)
@@ -180,3 +220,57 @@ def inspect(filepath, list_of_parameters):
 #     plt.xticks([])
 #     plt.yticks([])
 # plt.show()
+#
+# filename="images\\ref.png"
+# img = cv.imread(filename)
+# imgray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+# cv.namedWindow("THRESH")
+# cv.createTrackbar("MIN", "THRESH", 0, 255, nothing)
+# cv.createTrackbar("MAX", "THRESH", 0, 255, nothing)
+# while 1:
+#        k = cv.waitKey(1)
+#        if k != -1:
+#            break
+#        t1 = cv.getTrackbarPos("MIN", "THRESH")
+#        t2 = cv.getTrackbarPos("MAX", "THRESH")
+#        _, imthresh = cv.threshold(imgray, t1, t2, cv.THRESH_BINARY_INV)
+#        cv.imshow("THRESH", imthresh)
+# cv.destroyAllWindows()
+# dilation_kernel_size=5
+# dilation_it=3
+# kernel = np.ones((dilation_kernel_size,dilation_kernel_size), np.uint8)
+# imdil = cv.dilate(imthresh, kernel, iterations=dilation_it)
+# # dilation = cv.morphologyEx(edges, cv.MORPH_CLOSE, kernel)
+# cv.imshow("DILATE", imdil)
+# cv.waitKey()
+# cv.destroyAllWindows()
+#
+# h, w, c = img.shape
+# image = np.transpose(imdil)
+# # print("Img dims: "+str(h)+"x"+str(w))
+# first_column=image[0]
+# # print(first_column)
+# with open("first_column.txt","w+") as f:
+#     for n in first_column:
+#         f.write(str(n)+'\n')
+# i=0
+# print("Now I")
+# for i in range(len(first_column)):
+#     print(i)
+#     if first_column[i]==255 and first_column[i+1]==0 and i>10:  # jakie piękne rzeczy na sztywno jprdl
+#         y_min=i
+#         break
+# print("Now J")
+# for j in range(i, len(first_column)-1):
+#     # print(j)
+#     if first_column[j]==0 and first_column[j+1]==255 and j-y_min>50:  # jakie piękne rzeczy na sztywno jprdl
+#         y_max=j
+#         break
+#
+# cv.rectangle(img, (0,y_min),(w, y_max), (0,255,0), 2)
+# cv.imshow("ROI", img)
+# cv.waitKey()
+# cv.destroyAllWindows()
+#
+# with open("roi_s.txt", "a") as f:
+#     f.write("\n"+filename+": x0 = 0; y0 = "+str(y_min)+"; x_max = "+str(w)+"; y_max = "+str(y_max)+"h (12mm) -> "+str(y_max-y_min))
