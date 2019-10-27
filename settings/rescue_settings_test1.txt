@@ -1,0 +1,13 @@
+Filter size;7
+Canny threshold;15;191
+Dilation - kernel size;3
+Dilation - iterations;2
+Region of interest;0;500;200;335
+//nie wykrywa nic poza tym
+
+Filter size;7
+Canny threshold;40;146
+Dilation - kernel size;3
+Dilation - iterations;2
+Region of interest;0;500;200;335
+//wykrywa to od sprzęgacza
