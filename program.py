@@ -36,10 +36,16 @@ def set_ROI(filepath):
         cv.imshow("Set ROI", img)
     cv.destroyAllWindows()
     global x_min, x_max, y_min, y_max
-    x_min = ref_point[0][0]
-    x_max = ref_point[1][0]
-    y_min = ref_point[0][1]
-    y_max = ref_point[1][1]
+    if ref_point!=[]:
+        x_min = ref_point[0][0]
+        x_max = ref_point[1][0]
+        y_min = ref_point[0][1]
+        y_max = ref_point[1][1]
+    else:
+        x_min = -1
+        x_max = -1
+        y_min = -1
+        y_max = -1
 
 
 def canny_threshold(smooth_size, filepath):
@@ -94,16 +100,31 @@ def load_image(path):
 
 def tool_load_image():
     window_load_image = Tk()
-    window_load_image.geometry("240x100+550+325")
+    window_load_image.geometry("250x120+550+325")
     window_load_image.title("Load image")
+
+    label_acceptance = Label(window_load_image, text="Acceptance level")
+    label_acceptance.grid(row=0, column=0, sticky=E)
+
+    acceptanceLevel_Tab = [1, 2, 3]                 # NOT WORKING, JUST INTERFACE
+    acceptance_return = IntVar(window_load_image)
+    acceptance_return.set(acceptanceLevel_Tab[0])
+    options_acceptance = OptionMenu(window_load_image, acceptance_return, *acceptanceLevel_Tab)
+    options_acceptance.grid(row=0, column=1, sticky=W)
+
+    label_thickness = Label(window_load_image, text="Thickness [mm]")
+    label_thickness.grid(row=1, column=0, sticky=E)
+    entry_thickness = Entry(window_load_image)
+    entry_thickness.insert(END, "12")
+    entry_thickness.grid(row=1, column=1, sticky=W)
 
     path = 'images\\'
     path_display = Label(window_load_image, text=path)
-    path_display.grid(row=0, column=0, pady=15, sticky=E)
+    path_display.grid(row=2, column=0, sticky=E)
 
     entry_load_image = Entry(window_load_image)
     entry_load_image.insert(END, '')
-    entry_load_image.grid(row=0, column=1, pady=15, sticky=W)
+    entry_load_image.grid(row=2, column=1, sticky=W)
 
     button_load_function = Button(window_load_image, text="Load", command=lambda: load_image(path+entry_load_image.get()), width=15)
     button_load_function.grid(columnspan=2, pady=5, padx=65)
@@ -124,8 +145,10 @@ def tool_run():
     for i in range(len(settings_values)):
         settings_values[i]=int(settings_values[i])
     global x, y, w, h, images
-    x,y,w,h, filepath_inspected, images = myModule.inspect(filepath, settings_values)
-    status.config(text=" Main defect size: "+str(w)+" x "+str(h))
+    acceptance, x,y,w,h, filepath_inspected, images = \
+        myModule.inspect(filepath, settings_values, 3, 12)
+    status.config(text=" Main defect size: "+str(w)+" x "+str(h) + " / Coordinates: ("+str(x)+";"+str(y)+")"
+                       +" / Acceptance: "+str(acceptance))
     load_image(filepath_inspected)
     button_display_process.config(state=NORMAL)
 
@@ -141,17 +164,16 @@ def tool_settings():
                         f.write(label_1["text"] + ";" + str(min_threshold) + ";" + str(max_threshold) + "\n")
                     except:
                         print(sys.exc_info()[0])
-                        print(label_1["text"]+": Setting default value: 30 - 255")
-                        f.write(label_1["text"] + ";" + "30;255\n")
-                    f.write(label_2["text"] + ";" + setting_2.get() + "\n")
+                        print(label_1["text"]+": Setting default value: 20 - 77")
+                        f.write(label_1["text"] + ";" + "20;77\n")
+                    f.write(label_2["text"] + ";" + str(setting_2_return.get()) + "\n")
                     f.write(label_3["text"] + ";" + setting_3.get() + "\n")
-                    # f.write(label_4["text"] + ";" + str(x_min) + " < x < " + str(x_max) + "," + str(y_min) + " < y < " + str(y_max) + "\n")
                     try:
                         f.write(label_4["text"] + ";" + str(x_min) + ";" + str(x_max) + ";" + str(y_min) + ";" + str(y_max) + "\n")
                     except:
                         print(sys.exc_info()[0])
-                        print(label_4["text"]+": Setting default value: 0 < x < 500,200 < y < 335")
-                        f.write(label_4["text"] + ";" + "0;500;200;335\n")
+                        print(label_4["text"]+": Setting dynamic region of interest")
+                        f.write(label_4["text"] + ";" + "-1;-1;-1;-1\n")
                 tkinter.messagebox.showinfo("Quit", "Settngs saved in:\nsettings\\program_settings.txt")
         window_settings.destroy()
 
@@ -163,17 +185,17 @@ def tool_settings():
         settings_names.append(settings[i][0])
         for j in range(1, len(settings[i])):
             settings_values.append(settings[i][j])
-
+    print(settings_values)
     window_settings = Tk()
-    window_settings.geometry("375x180+468+300")
+    window_settings.geometry("400x200+450+280")
 
     window_settings.title("Settings")
 
     label_title_default = Label(window_settings, text="Default settings", font='Helvetica 10 bold')
     label_0 = Label(window_settings, text="Filter size")
     label_1 = Label(window_settings, text="Canny threshold")
-    label_2 = Label(window_settings, text="Dilation - kernel size")
-    label_3 = Label(window_settings, text="Dilation - iterations")
+    label_2 = Label(window_settings, text="Morphology - kernel size")
+    label_3 = Label(window_settings, text="Morphology - iterations")
     label_4 = Label(window_settings, text="Region of interest")
 
     label_title_current = Label(window_settings, text="Current settings", font='Helvetica 10 bold')
@@ -181,7 +203,10 @@ def tool_settings():
     label_1_1 = Label(window_settings, text=str(settings_values[1])+"-"+str(settings_values[2]))
     label_2_1 = Label(window_settings, text=str(settings_values[3]))
     label_3_1 = Label(window_settings, text=str(settings_values[4]))
-    label_4_1 = Label(window_settings, text="x: "+str(settings_values[5])+"-"+str(settings_values[6])+"\ty: "+str(settings_values[7])+"-"+str(settings_values[8]))
+    if settings_values[5]=="-1" and settings_values[6]=="-1" and settings_values[7]=="-1" and settings_values[8]=="-1":
+        label_4_1 = Label(window_settings,text="Dynamic region of interest")
+    else:
+        label_4_1 = Label(window_settings, text="x: "+str(settings_values[5])+" - "+str(settings_values[6])+" ; y: "+str(settings_values[7])+" - "+str(settings_values[8]))
 
     label_title_default.grid(row=0,columnspan=2)
     label_0.grid(row=1, column=0, sticky=E)
@@ -199,22 +224,24 @@ def tool_settings():
 
     filterType = [3, 5, 7, 9]
     setting_0_return = IntVar(window_settings)
-    setting_0_return.set(filterType[0])
-    setting_0 = OptionMenu(window_settings,setting_0_return, *filterType)
+    setting_0_return.set(filterType[3])
+    setting_0 = OptionMenu(window_settings, setting_0_return, *filterType)
     setting_0.grid(row=1, column=1)
 
     setting_1 = Button(window_settings, text="SET", width=15, command=lambda: canny_threshold(setting_0_return.get(), filepath))
     setting_1.grid(row=2, column=1)
 
-    setting_2 = Entry(window_settings)
-    setting_2.insert(END, "3")
+    morphologyKernel = [3, 5, 7, 9]
+    setting_2_return = IntVar(window_settings)
+    setting_2_return.set(morphologyKernel[0])
+    setting_2 = OptionMenu(window_settings, setting_2_return, *morphologyKernel)
     setting_2.grid(row=3, column=1, sticky=W)
 
     setting_3 = Entry(window_settings)
-    setting_3.insert(END, "4")
+    setting_3.insert(END, "3")
     setting_3.grid(row=4, column=1, sticky=W)
 
-    setting_4_current = Label(window_settings, text="Current ROI")
+    setting_4_current = Label(window_settings, text="Current ROI:")
     setting_4_current.grid(row=5, column=1)
     setting_4 = Button(window_settings, text="SET", width=15, command=lambda:set_ROI(filepath))
     setting_4.grid(row=6, column=1, pady=5)
@@ -239,7 +266,7 @@ status.pack(side=BOTTOM, fill=X)
 button_load = Button(toolbar, text="Load image", command=tool_load_image)
 button_load.pack(side=LEFT, padx=2, pady=2)
 
-button_settings = Button(toolbar, text="Settings", state=DISABLED, command=tool_settings)
+button_settings = Button(toolbar, text="Settings", command=tool_settings)
 button_settings.pack(side=LEFT, padx=2,pady=2)
 
 button_run = Button(toolbar, text="Run", state=DISABLED, command=tool_run)
