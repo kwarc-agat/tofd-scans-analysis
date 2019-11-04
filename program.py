@@ -100,33 +100,19 @@ def load_image(path):
 
 def tool_load_image():
     window_load_image = Tk()
-    window_load_image.geometry("250x120+550+325")
+    window_load_image.geometry("240x100+550+325")
     window_load_image.title("Load image")
-
-    label_acceptance = Label(window_load_image, text="Acceptance level")
-    label_acceptance.grid(row=0, column=0, sticky=E)
-
-    acceptanceLevel_Tab = [1, 2, 3]                 # NOT WORKING, JUST INTERFACE
-    acceptance_return = IntVar(window_load_image)
-    acceptance_return.set(acceptanceLevel_Tab[0])
-    options_acceptance = OptionMenu(window_load_image, acceptance_return, *acceptanceLevel_Tab)
-    options_acceptance.grid(row=0, column=1, sticky=W)
-
-    label_thickness = Label(window_load_image, text="Thickness [mm]")
-    label_thickness.grid(row=1, column=0, sticky=E)
-    entry_thickness = Entry(window_load_image)
-    entry_thickness.insert(END, "12")
-    entry_thickness.grid(row=1, column=1, sticky=W)
 
     path = 'images\\'
     path_display = Label(window_load_image, text=path)
-    path_display.grid(row=2, column=0, sticky=E)
+    path_display.grid(row=0, column=0, pady=15, sticky=E)
 
     entry_load_image = Entry(window_load_image)
     entry_load_image.insert(END, '')
-    entry_load_image.grid(row=2, column=1, sticky=W)
+    entry_load_image.grid(row=0, column=1, pady=15, sticky=W)
 
-    button_load_function = Button(window_load_image, text="Load", command=lambda: load_image(path+entry_load_image.get()), width=15)
+    button_load_function = Button(window_load_image, text="Load",
+                                  command=lambda: load_image(path + entry_load_image.get()), width=15)
     button_load_function.grid(columnspan=2, pady=5, padx=65)
 
     status.config(text="Adjust settings or run inspection")
@@ -148,7 +134,7 @@ def tool_run():
     acceptance, x,y,w,h, filepath_inspected, images = \
         myModule.inspect(filepath, settings_values, 3, 12)
     status.config(text=" Main defect size: "+str(w)+" x "+str(h) + " / Coordinates: ("+str(x)+";"+str(y)+")"
-                       +" / Acceptance: "+str(acceptance))
+                       + " / Acceptance: " + str(acceptance))
     load_image(filepath_inspected)
     button_display_process.config(state=NORMAL)
 
