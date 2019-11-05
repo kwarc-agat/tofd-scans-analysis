@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import filedialog
 import tkinter.messagebox
 import cv2 as cv
 from cv2 import *
@@ -98,26 +99,30 @@ def load_image(path):
     button_run.config(state=NORMAL)
 
 
+# def tool_load_image():
+#     window_load_image = Tk()
+#     window_load_image.geometry("240x100+550+325")
+#     window_load_image.title("Load image")
+#
+#     path = 'images\\'
+#     path_display = Label(window_load_image, text=path)
+#     path_display.grid(row=0, column=0, pady=15, sticky=E)
+#
+#     entry_load_image = Entry(window_load_image)
+#     entry_load_image.insert(END, '')
+#     entry_load_image.grid(row=0, column=1, pady=15, sticky=W)
+#
+#     button_load_function = Button(window_load_image, text="Load",
+#                                   command=lambda: load_image(path + entry_load_image.get()), width=15)
+#     button_load_function.grid(columnspan=2, pady=5, padx=65)
+#
+#     status.config(text="Adjust settings or run inspection")
+#     window_load_image.mainloop()
+
 def tool_load_image():
-    window_load_image = Tk()
-    window_load_image.geometry("240x100+550+325")
-    window_load_image.title("Load image")
-
-    path = 'images\\'
-    path_display = Label(window_load_image, text=path)
-    path_display.grid(row=0, column=0, pady=15, sticky=E)
-
-    entry_load_image = Entry(window_load_image)
-    entry_load_image.insert(END, '')
-    entry_load_image.grid(row=0, column=1, pady=15, sticky=W)
-
-    button_load_function = Button(window_load_image, text="Load",
-                                  command=lambda: load_image(path + entry_load_image.get()), width=15)
-    button_load_function.grid(columnspan=2, pady=5, padx=65)
-
-    status.config(text="Adjust settings or run inspection")
-    window_load_image.mainloop()
-
+    path = filedialog.askopenfilename(initialdir="images\\", title = "Select TOFD image",
+                                      filetypes=(("png files,", "*.png"), ("all files", "*.*")))
+    load_image(path)
 
 def tool_run():
     print("Inspection running...")

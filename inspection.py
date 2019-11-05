@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
 from statistics import stdev
+from pathlib import Path
 import datetime
 
 class Rectangle:
@@ -351,9 +352,10 @@ def inspect(filepath, list_of_parameters, acceptance_level, thickness):
     x_max, y_max, w_max, h_max, all_recs_in_mm = convert_to_mm(roi, thickness, corrected_recs)
     acceptance = confirm_indications(all_recs_in_mm, acceptance_level, thickness)
 
-    with open(filepath[7:-4]+"_results_in_pixels.txt", "w") as f:
+    with open(Path(filepath).stem+"_results_in_pixels.txt", "w") as f:
         i = 0
         for rec in all_recs:
+
             f.write("Pattern " + str(i) + ": x0 = " + str(rec.x) + "; y0 = " + str(rec.y) + "; w = " +
                     str(rec.w) + "; h = " + str(rec.h) + "\n")
             i += 1
@@ -366,3 +368,6 @@ def inspect(filepath, list_of_parameters, acceptance_level, thickness):
 # cv.imshow("result", images[4])
 # cv.waitKey()
 # cv.destroyAllWindows()
+
+# pierwsza strona do podpisu, reszta mailem, prezka w grudniu mailem i przyjść przegadać
+#
