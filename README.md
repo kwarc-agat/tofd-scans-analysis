@@ -1,20 +1,14 @@
 ## tofd-scans-analysis
 The analysis of the indications evaluation of welding imperfections using TOFD technic. An application automating analysis of ultrasound scans. Using: Python, OpenCV, Tkinter
 
-### 7/9 accuracy
+### to show version
 
-* finds 7/9 indications using *program_settings.txt*, displays dimensions of the biggest one, saves all indications to *results_in_mm.txt*
+* returns all main indications
 
-* **copy_list_without_one_elem(), do_overlap(), do_overlap_whole_list(), check_recs_over_recs()** - not used, to delete
+* 8 false call rate (originated from imperfect image/testing method)
 
-* **discard_irrelevant_results()** improved with coefficient of variation (deviation/average_field and find_smallest_rec() )
+* 2 doubtful indications
 
-* **check_histograms()** working like 75%, not satisfactory
+* can't decide about being surface-breaking
 
-* **find_roi()** improved by morphological transformations - static roi will be no longer supported
-
-* **convert_to_mm() and confirm_indications()** - new features
-
-* **inspect()** inproved by dilating and closing roi only and eroding whole image
-
-* STILL A MESSY SPAGHETTI 
+* joint thickness,acceptance level, height of surface wave, value helping to find roi: are fixed
