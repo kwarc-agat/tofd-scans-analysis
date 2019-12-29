@@ -31,6 +31,10 @@ def is_inside_joint(inner: Rectangle, outer: Rectangle) -> bool:
         return False
 
 
+def error_return():
+    return 0, 0, 0, 0, 0, 0, 0
+
+
 def find_smallest_rec(all_rec):
 
     smallest = all_rec[0]
@@ -192,6 +196,10 @@ def find_roi(filename):
     first_column = roi_mat_img[0]
 
     for i in range(len(first_column)):
+        if i == len(first_column)-1:
+            y_min = 0
+            y_max = len(first_column)-1
+            break
         if first_column[i] == 255 and first_column[i + 1] == 0 and i > 10:
             y_min = i
             break
@@ -286,6 +294,7 @@ def inspect(filepath, list_of_parameters, acceptance_level, thickness):
         roi_x_max=list_of_parameters[6]
         roi_y_min=list_of_parameters[7]
         roi_y_max=list_of_parameters[8]
+
     except IndexError:
         filter_size = 9
         canny_min = 20
@@ -297,10 +306,17 @@ def inspect(filepath, list_of_parameters, acceptance_level, thickness):
         roi_y_min = -1
         roi_y_max = -1
 
+    try_file = cv.imread(filepath)
+    try:
+        try_file.size == 0
+    except AttributeError:
+        return error_return()
+
     if roi_x_min == -1 and roi_x_max == -1 and roi_y_min == -1 and roi_y_max == -1:
         roi = find_roi(filepath)
     else:
         roi = Rectangle(roi_x_min, roi_y_min, roi_x_max-roi_x_min, roi_y_max-roi_y_min)
+
 
     img = cv.imread(filepath)
     height, width, channels = img.shape
@@ -310,10 +326,15 @@ def inspect(filepath, list_of_parameters, acceptance_level, thickness):
     # filter_img = cv.GaussianBlur(imgray,(filter_size,filter_size),0)
     # filter_img = cv.bilateralFilter(imgray, 10, 10, 10)
 
-    edges = cv.Canny(filter_img, canny_min,canny_max)
+    edges = cv.Canny(filter_img, canny_min, canny_max)
+    cv.imwrite("edges.png", edges)
 
-    img_to_dilate = edges[roi.y:roi.y+roi.h,roi.x:roi.x+roi.w]
-    kernel = np.ones((dilation_kernel_size,dilation_kernel_size), np.uint8)
+    try:
+        img_to_dilate = edges[roi.y:roi.y+roi.h, roi.x:roi.x+roi.w]
+    except IndexError:
+        return error_return()
+
+    kernel = np.ones((dilation_kernel_size, dilation_kernel_size), np.uint8)
 
     img_to_dilate = cv.dilate(img_to_dilate, kernel, iterations=dilation_it)
     edges[roi.y:roi.y+roi.h,roi.x:roi.x+roi.w] = cv.morphologyEx(img_to_dilate, cv.MORPH_CLOSE, kernel)
@@ -330,8 +351,15 @@ def inspect(filepath, list_of_parameters, acceptance_level, thickness):
             all_recs.append(rec)
             number_of_recs += 1
 
-    filtered_recs=discard_irrelevant_results(all_recs)
+    if len(all_recs) == 0:
+        return error_return()
+
+    cv.imwrite("contours.png",img)
+    filtered_recs = discard_irrelevant_results(all_recs)
     corrected_recs = filtered_recs
+    if len(corrected_recs) == 0:
+        return error_return()
+
     # corrected_recs = []
     # for rec in filtered_recs:
     #     corrected_recs.append(check_histograms(img, rec, roi))
@@ -363,11 +391,11 @@ def inspect(filepath, list_of_parameters, acceptance_level, thickness):
     return acceptance, x_max, y_max, w_max, h_max, filepath_inspected, images
 
 
-# throwMe = [9, 20, 77, 3, 3, -1, -1, -1, -1]
-# acc, x_max, y_max, w_max, h_max, filepath_inspected, images = inspect("images\\test1.png", throwMe, 3, 12)
-# cv.imshow("result", images[4])
-# cv.waitKey()
-# cv.destroyAllWindows()
+#throwMe = [9, 20, 77, 3, 3, -1, -1, -1, -1]
+#acc, x_max, y_max, w_max, h_max, filepath_inspected, images = inspect("images\\test1.png", throwMe, 3, 12)
+#cv.imshow("result", images[0])
+#cv.waitKey()
+#cv.destroyAllWindows()
 
 # pierwsza strona do podpisu, reszta mailem, prezka w grudniu mailem i przyjść przegadać
 #

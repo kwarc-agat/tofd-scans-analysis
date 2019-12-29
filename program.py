@@ -121,8 +121,10 @@ def load_image(path):
 
 def tool_load_image():
     path = filedialog.askopenfilename(initialdir="images\\", title = "Select TOFD image",
-                                      filetypes=(("png files,", "*.png"), ("all files", "*.*")))
+                                      filetypes=[("Image", "*.png")])
     load_image(path)
+    status.config(text="Adjust settings or run inspection")
+
 
 def tool_run():
     print("Inspection running...")
@@ -138,10 +140,13 @@ def tool_run():
     global x, y, w, h, images
     acceptance, x,y,w,h, filepath_inspected, images = \
         myModule.inspect(filepath, settings_values, 3, 12)
-    status.config(text=" Main defect size: "+str(w)+" x "+str(h) + " / Coordinates: ("+str(x)+";"+str(y)+")"
-                       + " / Acceptance: " + str(acceptance))
-    load_image(filepath_inspected)
-    button_display_process.config(state=NORMAL)
+    if images == 0:
+        status.config(text="Try loading file again")
+    else:
+        status.config(text=" Main defect size: "+str(w)+" x "+str(h) + " / Coordinates: ("+str(x)+";"+str(y)+")"
+                           + " / Acceptance: " + str(acceptance))
+        load_image(filepath_inspected)
+        button_display_process.config(state=NORMAL)
 
 
 def tool_settings():
@@ -195,7 +200,7 @@ def tool_settings():
     label_2_1 = Label(window_settings, text=str(settings_values[3]))
     label_3_1 = Label(window_settings, text=str(settings_values[4]))
     if settings_values[5]=="-1" and settings_values[6]=="-1" and settings_values[7]=="-1" and settings_values[8]=="-1":
-        label_4_1 = Label(window_settings,text="Dynamic region of interest")
+        label_4_1 = Label(window_settings,text="Dynamic")
     else:
         label_4_1 = Label(window_settings, text="x: "+str(settings_values[5])+" - "+str(settings_values[6])+" ; y: "+str(settings_values[7])+" - "+str(settings_values[8]))
 
