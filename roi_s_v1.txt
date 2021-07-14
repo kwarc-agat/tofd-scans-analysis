@@ -1,0 +1,5 @@
+
+images\ref.png: x0 = 0; y0 = 165; x_max = 1101; y_max = 239; h (12mm) -> 74
+images\test1.png: x0 = 0; y0 = 168; x_max = 1081; y_max = 253; h (12mm) -> 85
+images\test2.png: x0 = 0; y0 = 168; x_max = 1097; y_max = 246; h (12mm) -> 78
+images\test3.png: x0 = 0; y0 = 122; x_max = 1094; y_max = 187; h (12mm) -> 65
