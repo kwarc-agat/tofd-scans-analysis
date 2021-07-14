@@ -29,6 +29,6 @@ This app is a part of thesis project: "The analysis of the indications evaluatio
 ## Getting started
 
 ```sh
-git clone https://github.com/kwarc-agat/skryptowe20.git
+git clone <some url>
 ```
 Make sure that libraries listed above in Technologies are installed in your environment, then run <b>program.py</b>
