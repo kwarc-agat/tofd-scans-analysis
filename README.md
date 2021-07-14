@@ -22,7 +22,9 @@ This app is a part of thesis project: "The analysis of the indications evaluatio
 
 ## Demo
 
-<i>in preparation</i>
+![](https://github.com/kwarc-agat/tofd-scans-analysis/blob/master/demo_imgs/settings.JPG)
+![](https://github.com/kwarc-agat/tofd-scans-analysis/blob/master/demo_imgs/inspected_image.JPG)
+![](https://github.com/kwarc-agat/tofd-scans-analysis/blob/master/demo_imgs/show_process.JPG)
 
 ## Getting started
 
