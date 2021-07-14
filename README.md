@@ -1,14 +1,32 @@
-## tofd-scans-analysis
-The analysis of the indications evaluation of welding imperfections using TOFD technic. An application automating analysis of ultrasound scans. Using: Python, OpenCV, Tkinter
+# TOFD Scans Analysis
 
-### to show version
+Classifying welding samples based on PN-EN ISO 15626. The results of ultrasonic scans are processed in order to find welding imperfections and measure them.
 
-* returns all main indications
+This app is a part of thesis project: "The analysis of the indications evaluation of welding imperfections using TOFD technic"
 
-* 8 false call rate (originated from imperfect image/testing method)
+## Features
 
-* 2 doubtful indications
+- image processing
+    - Canny edge detecion
+    - morphological transformations
+- customize settings for image processing
+- imperfections marked on the image
+- imperfections size checked with the norm
 
-* can't decide about being surface-breaking
+## Technologies
 
-* joint thickness,acceptance level, height of surface wave, value helping to find roi: are fixed
+- Python 3.6
+    - OpenCV
+    - Tkinter
+    - Numpy
+
+## Demo
+
+<i>in preparation</i>
+
+## Getting started
+
+```sh
+git clone https://github.com/kwarc-agat/skryptowe20.git
+```
+Make sure that libraries listed above in Technologies are installed in your environment, then run <b>program.py</b>
